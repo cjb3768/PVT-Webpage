@@ -13,8 +13,6 @@ var pvt = function() {
     
     var backgroundSwitch = 0;
     
-    
-    
     this.changeButtonText = function() {
         if (backgroundSwitch===0){
             return "Click to change background";
@@ -28,7 +26,7 @@ var pvt = function() {
     this.getBackgroundColor = function() {
         if (backgroundSwitch===0){
             backgroundSwitch = 1;
-            return '#ff0000';
+            return '#880000';
         }
         else if (backgroundSwitch===1){
             backgroundSwitch = 0;
