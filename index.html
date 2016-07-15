@@ -23,17 +23,22 @@
     <script>
         var newPVT = new pvt();
         
+        //$('#start').click(newPVT.alterBackground('#page'));
+        
+        
         $('#page').click(function(){
             var bgc = "";
-            //alert("We clicked, ya'll");
             bgc = newPVT.getBackgroundColor();
+            newText = newPVT.changeButtonText();
             //alert(bgc);
             //this.style.backgroundColor = bgc;
             var par = this.parent;
             //par.style.backgroundColor = bgc;
             this.style.backgroundColor = bgc;
+            $('#start').html(newText);
         }
         );
+    
     </script>
     </footer>
 </html>

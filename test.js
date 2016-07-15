@@ -13,8 +13,16 @@ var pvt = function() {
     
     var backgroundSwitch = 0;
     
-    function returnDate() {
-        return Date.now();
+    
+    
+    this.changeButtonText = function() {
+        if (backgroundSwitch===0){
+            return "Click to change background";
+        }
+        else if (backgroundSwitch===1){
+            return "Click to revert changes";
+        }
+        return "Something went wrong";
     }
     
     this.getBackgroundColor = function() {
@@ -29,6 +37,10 @@ var pvt = function() {
         else{
             return '#000000';
         }
+    }
+    this.alterBackground = function(domElement){
+        $(domElement).style.backgroundColor = this.getBackgroundColor();
+        $(domElement).html() = changeButtonText();
     }
     
 }
