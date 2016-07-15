@@ -1,6 +1,11 @@
-.bodydiv{
+.bodyDiv{
+    
+    color: white;
+}
+.startButton{
     position:absolute;
     top:50%;
-    Left:50%;
-    color: white;
+    left:50%;
+    background-color:aliceblue;
+    color:black;
 }
