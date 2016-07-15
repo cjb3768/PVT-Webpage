@@ -11,7 +11,7 @@
         <!-- our scripts -->
         <script src="test.js"></script>
     </head>
-    <body bgcolor='#000000'>
+    <body bgcolor='#000000' id="page">
             <div class="startButton" id="start">
                 Click here to start test
             </div>
@@ -23,9 +23,15 @@
     <script>
         var newPVT = new pvt();
         
-        $('#start').click(function(){
+        $('#page').click(function(){
+            var bgc = "";
             //alert("We clicked, ya'll");
-            //$('#start').style.backgroundColor = newPVT.getBackgroundColor();
+            bgc = newPVT.getBackgroundColor();
+            //alert(bgc);
+            //this.style.backgroundColor = bgc;
+            var par = this.parent;
+            //par.style.backgroundColor = bgc;
+            this.style.backgroundColor = bgc;
         }
         );
     </script>

@@ -17,7 +17,7 @@ var pvt = function() {
         return Date.now();
     }
     
-    function getBackgroundColor() {
+    this.getBackgroundColor = function() {
         if (backgroundSwitch===0){
             backgroundSwitch = 1;
             return '#ff0000';
