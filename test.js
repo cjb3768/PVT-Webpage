@@ -45,7 +45,7 @@ var pvt = function() {
         $(domElement).html() = changeButtonText();
     }
     
-    this.calcTestTimeDelay = function(minTime,maxTime){
+    function calcTestTimeDelay(minTime,maxTime){
         return Math.floor(Math.random() * maxTime) + minTime;
     }
     
@@ -54,25 +54,49 @@ var pvt = function() {
     }
     
     function storeInterval(start, end){
-        timeGaps.push(this.calcInterval(start,end));
+        timeGaps.push(calcInterval(start,end));
     }
     
-    this.runTest = function(timeLimit){
+    this.runTest = function(timeLimit, pageID, buttonID){
         // run test for time limit (in ms)
         
-        // calculate starting time
-        var startTime = Date.now();
+        //clear existing data points
+        timeGaps.length = 0;
         
         // determine how long loop should run
-        var endTime = startTime + timeLimit;
+        var endTime = Date.now() + timeLimit;
         
         //begin process
         var i = 0;
-        while (Date.now() < endTime){
-            //do things
-            i += 1;
-        }
-        alert("Testing complete! That took " + i + " cycles");
+        var timeDelay = 0;
+        var rightNow = Date.now();
         
+        while (rightNow < endTime){
+            //determine timeDelay for for next test
+            timeDelay = calcTestTimeDelay(1000, 5000); //defaulting to between 1 and 5 seconds; we'll fix it later
+            
+            //set background to waiting background, change text
+            //ADD CODE HERE
+            $(pageID).css('backgroundColor','#880000');
+            $(buttonID).html("Please wait");
+            
+            //wait timeDelay
+            while (Date.now() < (rightNow + timeDelay)){
+                //do nothing here
+            }
+            
+            //change background, wait for mouse input
+            //ADD CODE HERE
+            $(pageID).css('backgroundColor','#00ff00');
+            $(buttonID).html("CLICK NOW!");
+            
+            //mouse input received (through an asynchronously updated boolean?), record timegap
+            storeInterval(rightNow + timeDelay, Date.now());
+            
+            //update rightNow
+            rightNow = Date.now();
+        }
+        alert("Testing complete! That test collected " + timeGaps.length + " timegaps");
+        alert(toString(timeGaps));
     }
 }
