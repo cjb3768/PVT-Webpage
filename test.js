@@ -12,6 +12,9 @@ function hello() {
 var pvt = function() {
     
     var backgroundSwitch = 0;
+    var startTime = 0;
+    var endTime = 0;
+    var timeGaps = [];
     
     this.changeButtonText = function() {
         if (backgroundSwitch===0){
@@ -36,9 +39,40 @@ var pvt = function() {
             return '#000000';
         }
     }
+    
     this.alterBackground = function(domElement){
         $(domElement).style.backgroundColor = this.getBackgroundColor();
         $(domElement).html() = changeButtonText();
     }
     
+    this.calcTestTimeDelay = function(minTime,maxTime){
+        return Math.floor(Math.random() * maxTime) + minTime;
+    }
+    
+    function calcInterval(start, end){
+        return end - start;
+    }
+    
+    function storeInterval(start, end){
+        timeGaps.push(this.calcInterval(start,end));
+    }
+    
+    this.runTest = function(timeLimit){
+        // run test for time limit (in ms)
+        
+        // calculate starting time
+        var startTime = Date.now();
+        
+        // determine how long loop should run
+        var endTime = startTime + timeLimit;
+        
+        //begin process
+        var i = 0;
+        while (Date.now() < endTime){
+            //do things
+            i += 1;
+        }
+        alert("Testing complete! That took " + i + " cycles");
+        
+    }
 }

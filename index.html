@@ -32,20 +32,28 @@
     <!-- button scripting -->
     <script>
         var newPVT = new pvt();
+        var clicked = false;
         
         //$('#start').click(newPVT.alterBackground('#page'));
         
         
         $('#page').click(function(){
-            var bgc = "";
-            bgc = newPVT.getBackgroundColor();
-            newText = newPVT.changeButtonText();
-            //alert(bgc);
-            //this.style.backgroundColor = bgc;
-            var par = this.parent;
-            //par.style.backgroundColor = bgc;
-            this.style.backgroundColor = bgc;
-            $('#start').html(newText);
+            if (!clicked){
+                var bgc = "";
+                bgc = newPVT.getBackgroundColor();
+                newText = newPVT.changeButtonText();
+                //alert(bgc);
+                //this.style.backgroundColor = bgc;
+                var par = this.parent;
+                //par.style.backgroundColor = bgc;
+                this.style.backgroundColor = bgc;
+                $('#start').html(newText);
+                newPVT.runTest(15000);
+                clicked = true;
+            }
+            else{
+                $('#start').html("Test currently running, please wait");         
+            }
         }
         );
     
