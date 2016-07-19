@@ -43,12 +43,8 @@ function getFinishTime(timeLimit){
 function mouseDown(evt){
     if (testActive === false){
         //start test
-        //setWaitIndicators();
+        setWaitIndicators();
         testActive = true;
-        
-        for (var i = 0; i < 5; i++){
-            
-        }
         //$('#result').html("Beginning test, please wait");
         startPVT();
     }
@@ -68,7 +64,7 @@ function mouseDown(evt){
             //reset indicators and flag
             setWaitIndicators();
             awaitingUser = false;
-            setWaitIndicators();
+            //setWaitIndicators();
             //set up next delay
             waitDelay();
         }
