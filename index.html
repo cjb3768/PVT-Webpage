@@ -11,42 +11,48 @@
         <!-- our scripts -->
         <script src="test.js"></script>
     </head>
-    <body bgcolor='#000000' id="page">
-        <div id='title'>
+    <body onload="init()">
+        <div id='page' bgcolor='#880000'>
+            <div id='title'>
                 Psychomotor Vigilance Test
-            <div id='description'>
-                As soon you see the background change color, click the button in the center of the screen.
-                This test will take approximately 2 minutes.
+                <div id='description'>
+                    As soon you see the background change color, click the button in the center of the screen.
+                    This test will take approximately 2 minutes.
+                </div>
+            </div>
+            
+            <div class="startButton" id="start">
+                Click here to start test
+            </div>
+            
+            <div id='result'>
+                Resulting text
             </div>
         </div>
-        <div class="startButton" id="start">
-            Click here to start test
-        </div>
-        <div id='result'>
-            Resulting text
-        </div>
-        
     </body>
     
     <footer>
     <!-- button scripting -->
     <script>
-        var newPVT = new pvt();
-        var clicked = false;
+        //var newPVT = new pvt();
+        //var clicked = false;
         
         //$('#start').click(newPVT.alterBackground('#page'));
         
         
-        $('#page').click(function(){
-            if (this.clicked===false){
-                newPVT.runTest(15000, '#page', '#start');
+        //$('#start').mousedown(newPVT.mouseDown("0")
+        /**
+            function(){
+            if (clicked===false){
+                newPVT.runTest(60000, '#page', '#start');
                 clicked = true;
             }
             else{
                 $('#start').html("Test currently running, please wait");        
             }
         }
-        );
+        */
+        //);
     
     </script>
     </footer>

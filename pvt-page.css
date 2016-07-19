@@ -10,3 +10,7 @@
     background-color:aliceblue;
     color:black;
 }
+.page{
+    height:%100;
+    width:%100;
+}
