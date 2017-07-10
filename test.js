@@ -1,24 +1,30 @@
 /* This document consists of the functions required to operate and run the Psychomotor Vigilance Test. Key functionality required consists of:
     Beginning an examination (DONE)
-    Capturing user response time (TODO - Accept mouse input as interrupt)
-    Scoring the user's response time
-    Writing results to a file
+    Capturing user response time (DONE)
+    Scoring the user's response time (Currently collecting an average, should we do more?)
+    Convert results to desired print format (DONE, UNLESS WE NEED TO ADD MORE DATA)
+    Create unique filename (DONE)
+    Writing results to a file (DONE)
+    Alter filesave location (Currently dumping directly to downloads)
+    
+    This document was based on the implementation found at http://www.sleepdisordersflorida.com/pvt1.html
 */
 
 var testActive = false; //whether test is running
 var awaitingUser = false; //whether test is waiting on user to click
 var startTime, finishTime; 
-var testDuration = 30000; //max duration of test in ms
+var startDate;
+var testDuration = 10000; //30000; //120000; //max duration of test in ms
 var waitDuration = 0; //timestamp for end of waiting period between tests
 var timeGaps = []; //user delay in clicking
 var startTimes = [];
 var endTimes = [];
-var avgGap=0; //average user delayin clicking
+var avgGap=0; //average user delay in clicking
 var rightNow = Date.now();
 var timeDelay = 0; //current 
 var minDelay = 1000; //minimum delay between tests
 var maxDelay = 5000; //maximum delay between tests
-    
+
 function calcTestTimeDelay(minTime,maxTime){
     return Math.floor(Math.random() * maxTime) + minTime;
 }
@@ -45,13 +51,10 @@ function mouseDown(evt){
         //start test
         setWaitIndicators();
         testActive = true;
-        //$('#result').html("Beginning test, please wait");
         startPVT();
     }
     else{
         //test running
-        //testActive = false;
-        //$('#result').html("Test is running");
         if (!awaitingUser){
             //alert user of false start (TO-DO: find out if these need to be isolated)
             $('#result').html("You've clicked too soon!");
@@ -61,12 +64,13 @@ function mouseDown(evt){
             var capturedClick = Date.now();
             storeTimestamps(waitDuration, capturedClick);
             storeInterval(waitDuration, capturedClick);
+            
             //reset indicators and flag
             setWaitIndicators();
             awaitingUser = false;
-            //setWaitIndicators();
+            
             //set up next delay
-            waitDelay();
+            nextDelay();  
         }
     }
 }
@@ -78,13 +82,14 @@ function startPVT(){
     endTimes.length = 0;
     
     //get startTime
+    startDate = new Date();
     startTime = Date.now();
     
     //get finishTime
     finishTime = getFinishTime(testDuration);
     
     //call function to wait for first duration
-    waitDelay();
+    nextDelay();
 }
 
 function keepTesting(){
@@ -106,40 +111,33 @@ function keepTesting(){
     }
 }
 
-function waitDelay(){
-
-    //see if test should be run
-    if (keepTesting()){
-        while (Date.now() < waitDuration){
-            //do nothing
-        }
-        setClickIndicators();
-        awaitingUser = true;
-    }
-    else{
-        //handle ending
-        endPVT();
-        
-    }
-}
-
 function endPVT(){
     //end testing
     testActive = false;
     setCompleteIndicators();
     alert("Testing complete! That test collected " + timeGaps.length + " timegaps");
     var recordedTime = "";
-    for (var j = 0; j < timeGaps.length;j++){
-        recordedTime += "" + timeGaps[j] + "ms, ";
+    var totalGapTime = 0;
+    for (var j = 0; j < timeGaps.length; j++){
+        recordedTime += "" + timeGaps[j] + "ms";
+        totalGapTime += timeGaps[j];
+        if(j != timeGaps.length -1){
+            recordedTime += ", ";
+        }
     }
     alert(recordedTime);
+    //get average response time
+    avgGap = totalGapTime/timeGaps.length;
+    alert("Average response time = " + avgGap + "ms");
+    //print results to file
+    var printString = formatPrintString(timeGaps,avgGap);
+    var fileName = generateFileName();
+    download(printString,fileName,"text/csv");
 }
 
 function setWaitIndicators(){
-    $("#page").css('backgroundColor','#aa0000').show();
-    $('#result').html("Click registered! Please wait.").show();
-    //$("#start").html("Please wait").show();
-    
+    $("#page").css('backgroundColor','#aa0000');
+    $('#result').html("Click registered! Please wait.");
 }
 
 function setClickIndicators(){
@@ -151,58 +149,103 @@ function setCompleteIndicators(){
     $("#page").css('backgroundColor','#00eeff');
     $("#result").html("Click to start new test");
 }
-/**
-    function runTest(timeLimit, pageID, buttonID){
-        // run test for time limit (in ms)
-        
-        //clear existing data points
-        timeGaps.length = 0;
-        
-        // determine how long loop should run
-        var endTime = getEndTime(timeLimit);
-        
-        //begin process
-        var i = 0;
-        timeDelay = 0;
-        rightNow = Date.now();
-        
-        while (rightNow < endTime){
-            //determine timeDelay for for next test
-            timeDelay = calcTestTimeDelay(1000, 5000); //defaulting to between 1 and 5 seconds; we'll fix it later
-            
-            //set background to waiting background, change text
-            $(pageID).css('backgroundColor','#880000');
-            $(buttonID).html("Please wait");
-            
-            //wait timeDelay
-            while (Date.now() < (rightNow + timeDelay)){
-                //do nothing here
-            }
-            
-            //change background and text
-            $(pageID).css('backgroundColor','#00ff00');
-            $(buttonID).html("CLICK NOW!");
-            
-            //wait for mouse input
-            //TODO - handle asynch interrupt here
-            //use while loop to wait
-            
-            //mouse input received (through an asynchronously updated boolean?), record timegap
-            storeInterval(rightNow + timeDelay, Date.now());
-            
-            //update rightNow
-            rightNow = Date.now();
+
+/* trigger PVT click prompt */
+function readyForUser(n){
+
+    return new Promise(resolve =>{
+        if (keepTesting()){
+            setTimeout(()=>{
+                setClickIndicators();
+                awaitingUser = true;
+                resolve(n);
+            },timeDelay);
         }
-        alert("Testing complete! That test collected " + timeGaps.length + " timegaps");
-        var recordedTime = "";
-        for (var j = 0; j < timeGaps.length;j++){
-            recordedTime += "" + timeGaps[j] + "ms, ";
+        else{
+            endPVT();
+            resolve(n);   
         }
-        alert(recordedTime);
-    }
-*/
+    });
+}
+
+async function nextDelay(){
+    readyForUser(0);
+}
 
 function init(){
     document.getElementById("page").onmousedown = mouseDown;
     setCompleteIndicators();
 }
+
+function formatPrintString(gaps,avg){
+    
+    var printString = "Gap Number, Gap Length, Average Gap Length, Offset From Average";
+    
+    //-----------------------------------------
+    //add any additional columns heads here
+    printString += "";
+    //-----------------------------------------
+    
+    printString += "\n";
+    
+    for (var j = 0; j < gaps.length; j++){
+        //add gap number
+        printString += "" + j;
+        //add gap time
+        printString += "," + gaps[j];
+        //add average time
+        printString += "," + avg;
+        //calculate offset from average
+        printString += "," + (gaps[j] - avg);
+        
+        //---------------------------------------
+        //    add any other data to print here
+        printString += "";
+        //---------------------------------------
+        
+        //end line with newline character
+        printString += "\n";
+        
+    }
+    return printString;
+}
+
+function generateFileName(){
+    //filename of format "Day-Month-Year_Hour:Minute:Second:Millisecond-PVTResults.csv"
+    var fileName = "PVT Results, ";
+    //day-month-year
+    fileName += "" + startDate.getDate() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getFullYear() + ", ";
+    //fileName += "" + startTime.toLocaleDateString();
+    //hour-min-second
+    //fileName += "" + startDate.getHours() + ":" + startDate.getMinutes() + ":" + startDate.getSeconds() + ":" + startDate.getMilliseconds();
+    fileName += "" + startDate.toLocaleTimeString();
+    //finish filename
+    fileName += ".csv";
+    //return fileName
+    return fileName;
+}
+
+/**
+    File printing code taken from StackOverflow
+    https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
+*/
+
+// Function to download data to a file
+function download(data, filename, type) {
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+}
+
