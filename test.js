@@ -29,7 +29,9 @@ var earlyGaps = []; //user's early clicks
 var startTimes = [];
 var endTimes = [];
 var earlyTimes = []; //used to keep track of when user clicks too soon
+var lastClick=0; //time used to determine how long it's been since a user clicked - for detecting early clicks in test
 var avgGap=0; //average user delay in clicking
+var avgEarly=0; //average time user waited before clicking too soon
 var rightNow = Date.now();
 var timeDelay = 0; //current 
 var minDelay = 1000; //minimum delay between tests
@@ -72,13 +74,20 @@ function mouseDown(evt){
     else{
         //test running
         if (!awaitingUser){
-            //alert user of false start (TO-DO: find out if these need to be isolated)
-            earlyTimes.push(Date.now()); //store the 
+           
+            var capturedClick = Date.now();
+            earlyTimes.push(capturedClick); //store the timestamp of a given early click
+            
+            storeInterval(lastClick, capturedClick, 1);
+            lastClick = capturedClick;
+            
+             //alert user of false start (TO-DO: find out if these need to be isolated)
             $('#result').html("You've clicked too soon!");
         }
         else{
             //store interval between delay and mouse down
             var capturedClick = Date.now();
+            lastClick = capturedClick;
             storeTimestamps(waitDuration, capturedClick);
             storeInterval(waitDuration, capturedClick, 0);
             
@@ -102,6 +111,7 @@ function startPVT(){
     //get startTime
     startDate = new Date();
     startTime = Date.now();
+    lastClick = startTime;
     
     //get finishTime
     finishTime = getFinishTime(testDuration);
@@ -135,20 +145,41 @@ function endPVT(){
     setCompleteIndicators();
     alert("Testing complete! That test collected " + timeGaps.length + " timegaps");
     var recordedTime = "";
+    var recordedEarlyClicks = "";
     var totalGapTime = 0;
+    var totalEarlyTime = 0;
+    var numEarlyClicks = 0;
+    var numNormal = 0;
     for (var j = 0; j < timeGaps.length; j++){
-        recordedTime += "" + timeGaps[j].gap + "ms";
-        totalGapTime += timeGaps[j].gap;
-        if(j != timeGaps.length -1){
-            recordedTime += ", ";
+        if (timeGaps[j].early){
+            //we had an early click
+            numEarlyClicks ++;
+            recordedEarlyClicks += "" + timeGaps[j].gap + "ms";
+            totalEarlyTime += timeGaps[j].gap;
+            if(j != timeGaps.length -1){
+                recordedEarlyClicks += ", ";
+            }
+        }
+        else{
+            //we clicked after timer
+            numNormal ++;
+            recordedTime += "" + timeGaps[j].gap + "ms";
+            totalGapTime += timeGaps[j].gap;
+            if(j != timeGaps.length -1){
+                recordedTime += ", ";
+            }
         }
     }
-    alert(recordedTime);
+    alert("Gaps at " + recordedTime);
+    alert("Premature clicks at " + recordedEarlyClicks)
     //get average response time
     avgGap = totalGapTime/timeGaps.length;
     alert("Average response time = " + avgGap + "ms");
+    //get average early time
+    avgEarly = totalEarlyTime/numEarlyClicks;
+    alert("Average early response time " + avgEarly + "ms");
     //print results to file
-    var printString = formatPrintString(timeGaps,avgGap);
+    var printString = formatPrintString(timeGaps,avgGap,avgEarly);
     var fileName = generateFileName();
     download(printString,fileName,"text/csv");
 }
@@ -195,15 +226,15 @@ function init(){
     setCompleteIndicators();
 }
 
-function formatPrintString(gaps,avg){
+function formatPrintString(gaps,avg,avgEarly){
     
-    var printString = "Gap Number, Gap Length, Preemptive Click?"; 
+    var printString = "Gap Number, Gap Length, Early Click?"; 
     
     printString += ",Average Gap Length, Offset From Average";
     
     //-----------------------------------------
     //add any additional columns heads here
-    printString += "";
+    printString += ",Average Early Response Time";
     //-----------------------------------------
     
     printString += "\n";
@@ -218,11 +249,15 @@ function formatPrintString(gaps,avg){
         //add average time
         printString += "," + avg;
         //calculate offset from average
-        printString += "," + (gaps[j].gap - avg);
-        
+        if (!gaps[j].early)
+            printString += "," + (gaps[j].gap - avg);
+        else
+            printString += "," + -1;
         //---------------------------------------
         //    add any other data to print here
-        printString += "";
+        
+        //average early response time 
+        printString += "," + avgEarly;
         //---------------------------------------
         
         //end line with newline character
