@@ -10,15 +10,25 @@
     This document was based on the implementation found at http://www.sleepdisordersflorida.com/pvt1.html
 */
 
+//defining a class for timegaps to handle both early clicks and reasonable clicks
+class TimeGap{
+    constructor(gap, early){
+        this.gap = gap;
+        this.early = early;
+    }
+}
+
 var testActive = false; //whether test is running
 var awaitingUser = false; //whether test is waiting on user to click
 var startTime, finishTime; 
 var startDate;
-var testDuration = 10000; //30000; //120000; //max duration of test in ms
+var testDuration = 20000; //30000; //120000; //max duration of test in ms
 var waitDuration = 0; //timestamp for end of waiting period between tests
 var timeGaps = []; //user delay in clicking
+var earlyGaps = []; //user's early clicks
 var startTimes = [];
 var endTimes = [];
+var earlyTimes = []; //used to keep track of when user clicks too soon
 var avgGap=0; //average user delay in clicking
 var rightNow = Date.now();
 var timeDelay = 0; //current 
@@ -32,6 +42,14 @@ function calcTestTimeDelay(minTime,maxTime){
 function storeTimestamps(start,end){
     startTimes.push(start);
     endTimes.push(end);
+}
+
+function storeEarlyClick(clickTime){
+    earlyTimes.push(clickTime);
+}
+
+function storeEarlyInterval(){
+    
 }
 
 function calcInterval(start, end){
@@ -57,10 +75,11 @@ function mouseDown(evt){
         //test running
         if (!awaitingUser){
             //alert user of false start (TO-DO: find out if these need to be isolated)
+            earlyTimes.push(Date.now()); //store the 
             $('#result').html("You've clicked too soon!");
         }
         else{
-            //store intervbal between delay and mouse down
+            //store interval between delay and mouse down
             var capturedClick = Date.now();
             storeTimestamps(waitDuration, capturedClick);
             storeInterval(waitDuration, capturedClick);
@@ -80,6 +99,7 @@ function startPVT(){
     timeGaps.length = 0;
     startTimes.length = 0;
     endTimes.length = 0;
+    earlyTimes.length = 0;
     
     //get startTime
     startDate = new Date();
@@ -179,7 +199,9 @@ function init(){
 
 function formatPrintString(gaps,avg){
     
-    var printString = "Gap Number, Gap Length, Average Gap Length, Offset From Average";
+    var printString = "Gap Number, Gap Length, Preemptive Click?"; 
+    
+    printString += ",Average Gap Length, Offset From Average";
     
     //-----------------------------------------
     //add any additional columns heads here
