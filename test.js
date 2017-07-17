@@ -14,7 +14,7 @@
 class TimeGap{
     constructor(gap, early){
         this.gap = gap;
-        this.early = early;
+        this.early = early; //this is 0 if we were not pre-emptively clicking, 1 if we were
     }
 }
 
@@ -48,16 +48,14 @@ function storeEarlyClick(clickTime){
     earlyTimes.push(clickTime);
 }
 
-function storeEarlyInterval(){
-    
-}
-
 function calcInterval(start, end){
     return end - start;
 }
     
-function storeInterval(start, end){
-    timeGaps.push(calcInterval(start,end));
+function storeInterval(start, end, early){
+    var interval = calcInterval(start,end);
+    var newGap = new TimeGap(interval,early);
+    timeGaps.push(newGap);
 }
 
 function getFinishTime(timeLimit){
@@ -82,7 +80,7 @@ function mouseDown(evt){
             //store interval between delay and mouse down
             var capturedClick = Date.now();
             storeTimestamps(waitDuration, capturedClick);
-            storeInterval(waitDuration, capturedClick);
+            storeInterval(waitDuration, capturedClick, 0);
             
             //reset indicators and flag
             setWaitIndicators();
@@ -139,8 +137,8 @@ function endPVT(){
     var recordedTime = "";
     var totalGapTime = 0;
     for (var j = 0; j < timeGaps.length; j++){
-        recordedTime += "" + timeGaps[j] + "ms";
-        totalGapTime += timeGaps[j];
+        recordedTime += "" + timeGaps[j].gap + "ms";
+        totalGapTime += timeGaps[j].gap;
         if(j != timeGaps.length -1){
             recordedTime += ", ";
         }
@@ -214,11 +212,13 @@ function formatPrintString(gaps,avg){
         //add gap number
         printString += "" + j;
         //add gap time
-        printString += "," + gaps[j];
+        printString += "," + gaps[j].gap;
+        //add pre-emptive click value (1 if yes, 0 if no)
+        printString += "," + gaps[j].early;
         //add average time
         printString += "," + avg;
         //calculate offset from average
-        printString += "," + (gaps[j] - avg);
+        printString += "," + (gaps[j].gap - avg);
         
         //---------------------------------------
         //    add any other data to print here
