@@ -22,7 +22,7 @@ var testActive = false; //whether test is running
 var awaitingUser = false; //whether test is waiting on user to click
 var startTime, finishTime; 
 var startDate;
-var testDuration = 20000; //30000; //120000; //max duration of test in ms
+var testDuration = 300000; //20000; //30000; //120000; //max duration of test in ms
 var waitDuration = 0; //timestamp for end of waiting period between tests
 var timeGaps = []; //user delay in clicking
 var earlyGaps = []; //user's early clicks
